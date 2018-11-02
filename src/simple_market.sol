@@ -91,7 +91,11 @@ contract SimpleMarket is EventfulMarket, DSMath {
     }
 
     // Make a new offer. Takes funds from the caller into market escrow.
-    function offer(uint sellAmt, ERC20 sellGem, uint buyAmt, ERC20 buyGem)
+    function offer(uint sellAmt, ERC20 sellGem, uint buyAmt, ERC20 buyGem) public returns (uint id) {
+        id = offer(sellAmt, sellGem, buyAmt, buyGem, msg.sender);
+    }
+
+    function offer(uint sellAmt, ERC20 sellGem, uint buyAmt, ERC20 buyGem, address owner)
         public
         canOffer
         nonReentrant
@@ -112,7 +116,7 @@ contract SimpleMarket is EventfulMarket, DSMath {
         offerInfo.sellGem = sellGem;
         offerInfo.buyAmt = buyAmt;
         offerInfo.buyGem = buyGem;
-        offerInfo.owner = msg.sender;
+        offerInfo.owner = owner;
         offerInfo.timestamp = uint64(now);
         id = ++lastOfferId;
         offers[id] = offerInfo;
@@ -123,7 +127,7 @@ contract SimpleMarket is EventfulMarket, DSMath {
         emit LogMake(
             bytes32(id),
             keccak256(abi.encodePacked(sellGem, buyGem)),
-            msg.sender,
+            owner,
             sellGem,
             buyGem,
             uint128(sellAmt),
